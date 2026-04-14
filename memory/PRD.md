@@ -17,6 +17,14 @@ Control systems engineering app for analyzing transfer functions (1st to 4th ord
 ## Navigation
 4 tabs: Function | Analyze | Stability | Config
 
+## New Features (v2)
+10. **Step Response** - Time-domain step response chart with steady-state reference line
+11. **Impulse Response** - Time-domain impulse response chart
+12. **Time Metrics** - Steady state value, overshoot %, rise time (10-90%), settling time (2% band)
+13. **Save Transfer Functions** - Save favorites to MongoDB with custom names
+14. **Load Transfer Functions** - Tap saved TF to load coefficients, delete unwanted ones
+15. **Parallel Simulation** - RUN_SIMULATION calls both Bode analysis and time-response endpoints in parallel
+
 ## Tech Stack
 - **Frontend**: React Native (Expo SDK 54), react-native-svg for charts, expo-file-system + expo-sharing for exports
 - **Backend**: FastAPI + scipy (signal processing) + reportlab (PDF generation)
