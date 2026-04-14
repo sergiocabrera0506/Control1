@@ -1,0 +1,77 @@
+{
+  "theme": "dark",
+  "archetype": "7 (Electric & Neon / Retro-Futurism)",
+  "color_palette": {
+    "background_main": "#0D1117",
+    "background_card": "#161B22",
+    "accent_primary": "#00FF66",
+    "accent_secondary": "#00E5FF",
+    "accent_danger": "#FF3366",
+    "text_primary": "#FFFFFF",
+    "text_secondary": "#8B949E",
+    "border": "#30363D",
+    "grid_lines": "#21262D"
+  },
+  "typography": {
+    "font_family": "SpaceMono_400Regular, monospace",
+    "font_family_bold": "SpaceMono_700Bold, monospace",
+    "sizes": {
+      "h1": "24px",
+      "h2": "20px",
+      "h3": "16px",
+      "body": "14px",
+      "label": "12px"
+    },
+    "technical_labels": "uppercase with wide tracking (letter-spacing: 2px)"
+  },
+  "layout_and_spacing": {
+    "screen_padding": "16px",
+    "element_gap": "12px",
+    "card_border_radius": "4px",
+    "metric_pill": {
+      "border_left_width": "4px",
+      "padding": "12px",
+      "bg_color": "#161B22"
+    }
+  },
+  "components": {
+    "button": {
+      "bg": "transparent",
+      "border": "1px solid #00FF66",
+      "text_color": "#00FF66",
+      "border_radius": "4px",
+      "padding": "12px 24px"
+    },
+    "input": {
+      "bg": "#0D1117",
+      "border_bottom": "2px solid #30363D",
+      "focus_border": "#00E5FF",
+      "text_color": "#00E5FF"
+    },
+    "tab_bar": {
+      "bg": "#0D1117",
+      "active_color": "#00FF66",
+      "inactive_color": "#8B949E"
+    }
+  },
+  "charts": {
+    "requirements": "Bode plots need logarithmic X-axis. Pole-Zero map needs scatter plot with unit circle.",
+    "colors": {
+      "magnitude_line": "#00E5FF",
+      "phase_line": "#00FF66",
+      "poles": "#FF3366",
+      "zeros": "#00E5FF",
+      "grid": "#21262D"
+    }
+  },
+  "image_urls": [],
+  "instructions_to_main_agent": [
+    "Design Identity: STRICT Retro-Futurism / Cyberpunk / Technical Engineering tool.",
+    "Colors: Deep dark charcoal/navy background with neon green and cyan accents.",
+    "Typography: Use Monospace fonts (like SpaceMono) exclusively for all text. Labels should be uppercase like 'ENGINEER_CORE' or 'SYSTEM_STATE'.",
+    "Metric Cards: Implement pill-shaped or rectangular metric cards with a bright colored left border (e.g., Green for stable, Red for unstable).",
+    "Charts: Use an advanced charting library that supports logarithmic axes for Bode plots and scatter plots for Pole-Zero maps (e.g., react-native-echarts or victory-native).",
+    "Inputs: Transfer function coefficient inputs should look technical (e.g., border-bottom only, glowing focus states).",
+    "Testing: Add testID (React Native) or data-testid (Web) attributes in kebab-case to all interactive and key informational elements."
+  ]
+}
