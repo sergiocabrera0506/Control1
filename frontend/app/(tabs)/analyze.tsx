@@ -6,12 +6,13 @@ import { useAppContext } from '../../src/context/AppContext';
 import { formatFrequency, fmt } from '../../src/utils/formatters';
 import { downloadBase64File } from '../../src/utils/fileExport';
 import BodeChart from '../../src/components/BodeChart';
+import TimeChart from '../../src/components/TimeChart';
 import { COLORS, FONTS } from '../../src/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function AnalyzeScreen() {
-  const { result, cursor, setCursor, numerator, denominator, config } = useAppContext();
+  const { result, cursor, setCursor, numerator, denominator, config, timeResponse } = useAppContext();
 
   const handleCursorMove = (index: number) => {
     if (!result) return;
@@ -91,28 +92,16 @@ export default function AnalyzeScreen() {
         </View>
 
         {/* Magnitude Plot */}
-        <BodeChart
-          frequencies={result.frequencies}
-          values={result.magnitude_db}
-          color={COLORS.accentSecondary}
-          label="MAGNITUDE"
-          showGrid={config.showGrid}
-          onCursorMove={handleCursorMove}
-        />
+        <BodeChart frequencies={result.frequencies} values={result.magnitude_db}
+          color={COLORS.accentSecondary} label="MAGNITUDE" showGrid={config.showGrid} onCursorMove={handleCursorMove} />
 
         {/* Phase Plot */}
         <View style={{ marginTop: 12 }}>
-          <BodeChart
-            frequencies={result.frequencies}
-            values={result.phase_deg}
-            color={COLORS.accentPrimary}
-            label="PHASE"
-            showGrid={config.showGrid}
-            onCursorMove={handleCursorMove}
-          />
+          <BodeChart frequencies={result.frequencies} values={result.phase_deg}
+            color={COLORS.accentPrimary} label="PHASE" showGrid={config.showGrid} onCursorMove={handleCursorMove} />
         </View>
 
-        {/* Metrics */}
+        {/* Frequency Domain Metrics */}
         {result.gain_margin_db != null && (
           <View testID="gain-margin-pill" style={[s.pill, { borderLeftColor: COLORS.accentSecondary }]}>
             <Text style={s.pillLabel}>GAIN MARGIN</Text>
@@ -130,6 +119,53 @@ export default function AnalyzeScreen() {
             <Text style={s.pillLabel}>UNITY GAIN</Text>
             <Text style={s.pillVal}>{formatFrequency(result.gain_crossover_freq)}</Text>
           </View>
+        )}
+
+        {/* ---- TIME DOMAIN ANALYSIS ---- */}
+        {timeResponse && (
+          <>
+            <View style={s.timeDivider}>
+              <View style={s.divLine} />
+              <Text style={s.divText}>TIME DOMAIN ANALYSIS</Text>
+              <View style={s.divLine} />
+            </View>
+
+            {/* Step Response */}
+            <TimeChart time={timeResponse.step.time} amplitude={timeResponse.step.amplitude}
+              color={COLORS.accentSecondary} label="STEP RESPONSE" showGrid={config.showGrid} />
+
+            {/* Impulse Response */}
+            <View style={{ marginTop: 12 }}>
+              <TimeChart time={timeResponse.impulse.time} amplitude={timeResponse.impulse.amplitude}
+                color={COLORS.accentDanger} label="IMPULSE RESPONSE" showGrid={config.showGrid} />
+            </View>
+
+            {/* Time Domain Metrics */}
+            <View testID="time-metrics" style={s.metricsGrid}>
+              <View style={[s.metricCard, { borderTopColor: COLORS.accentSecondary }]}>
+                <Text style={s.metricLabel}>STEADY STATE</Text>
+                <Text style={s.metricVal}>{fmt(timeResponse.metrics.steady_state, 3)}</Text>
+              </View>
+              <View style={[s.metricCard, { borderTopColor: COLORS.accentDanger }]}>
+                <Text style={s.metricLabel}>OVERSHOOT</Text>
+                <Text style={s.metricVal}>{fmt(timeResponse.metrics.overshoot_pct, 1)}<Text style={s.metricUnit}> %</Text></Text>
+              </View>
+              <View style={[s.metricCard, { borderTopColor: COLORS.accentPrimary }]}>
+                <Text style={s.metricLabel}>RISE TIME</Text>
+                <Text style={s.metricVal}>
+                  {timeResponse.metrics.rise_time != null ? `${fmt(timeResponse.metrics.rise_time, 3)}` : '—'}
+                  <Text style={s.metricUnit}> s</Text>
+                </Text>
+              </View>
+              <View style={[s.metricCard, { borderTopColor: COLORS.accentWarning }]}>
+                <Text style={s.metricLabel}>SETTLING TIME</Text>
+                <Text style={s.metricVal}>
+                  {timeResponse.metrics.settling_time != null ? `${fmt(timeResponse.metrics.settling_time, 2)}` : '—'}
+                  <Text style={s.metricUnit}> s</Text>
+                </Text>
+              </View>
+            </View>
+          </>
         )}
 
         {/* Export CSV */}
@@ -154,7 +190,6 @@ const s = StyleSheet.create({
   headerTitle: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 18, fontWeight: '700', letterSpacing: 2 },
   stableBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
   stableText: { fontFamily: FONTS.mono, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  // Cursor
   cursorCard: { backgroundColor: COLORS.bgCard, borderRadius: 4, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 12, borderLeftWidth: 3, borderLeftColor: COLORS.accentSecondary },
   label: { color: COLORS.accentSecondary, fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 2, marginBottom: 4 },
   probeTitle: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 18, fontWeight: '700', marginBottom: 8 },
@@ -162,12 +197,19 @@ const s = StyleSheet.create({
   cursorCol: { flex: 1 },
   cursorLabel: { color: COLORS.textSecondary, fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1.5, marginBottom: 2 },
   cursorVal: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 16, fontWeight: '700' },
-  // Pills
   pill: { backgroundColor: COLORS.bgCard, borderRadius: 24, borderLeftWidth: 4, padding: 16, marginTop: 12 },
   pillLabel: { color: COLORS.textSecondary, fontFamily: FONTS.mono, fontSize: 9, letterSpacing: 2, marginBottom: 4 },
   pillVal: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 22, fontWeight: '700' },
   pillUnit: { fontSize: 14, color: COLORS.accentSecondary, fontWeight: '400' },
-  // Export
+  // Time domain
+  timeDivider: { flexDirection: 'row', alignItems: 'center', marginTop: 24, marginBottom: 12, gap: 12 },
+  divLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
+  divText: { color: COLORS.accentPrimary, fontFamily: FONTS.mono, fontSize: 10, letterSpacing: 2 },
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+  metricCard: { flexGrow: 1, flexBasis: '45%' as any, backgroundColor: COLORS.bgCard, borderRadius: 4, borderTopWidth: 3, padding: 12 },
+  metricLabel: { color: COLORS.textSecondary, fontFamily: FONTS.mono, fontSize: 8, letterSpacing: 1.5, marginBottom: 4 },
+  metricVal: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 18, fontWeight: '700' },
+  metricUnit: { fontSize: 12, fontWeight: '400', color: COLORS.textSecondary },
   exportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.accentPrimary, borderRadius: 8, paddingVertical: 14, marginTop: 16 },
   exportText: { color: COLORS.accentPrimary, fontFamily: FONTS.mono, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
 });

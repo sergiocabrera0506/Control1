@@ -1,6 +1,6 @@
 """
 Backend API tests for Bode Diagram Analyzer
-Tests: /api/ health, /api/analyze, /api/export/csv, /api/export/pdf
+Tests: /api/ health, /api/analyze, /api/export/csv, /api/export/pdf, /api/time-response, /api/transfers CRUD
 """
 import pytest
 import requests
@@ -216,3 +216,147 @@ class TestExportPDF:
         data = response.json()
         assert "error" in data
         print(f"✓ PDF export error handling passed")
+
+
+
+class TestTimeResponse:
+    """POST /api/time-response - Step and impulse response analysis"""
+    
+    def test_time_response_default_tf(self):
+        """Test time-response with default transfer function"""
+        payload = {
+            "numerator": [0, 0, 1, 1.2],
+            "denominator": [0, 0, 1, 0.45, 1],
+            "freq_min": 0.01,
+            "freq_max": 100000.0,
+            "num_points": 1024
+        }
+        response = requests.post(f"{BASE_URL}/api/time-response", json=payload)
+        assert response.status_code == 200
+        
+        data = response.json()
+        # Verify structure
+        assert "step" in data
+        assert "impulse" in data
+        assert "metrics" in data
+        
+        # Verify step response
+        assert "time" in data["step"]
+        assert "amplitude" in data["step"]
+        assert isinstance(data["step"]["time"], list)
+        assert isinstance(data["step"]["amplitude"], list)
+        assert len(data["step"]["time"]) > 0
+        assert len(data["step"]["time"]) == len(data["step"]["amplitude"])
+        
+        # Verify impulse response
+        assert "time" in data["impulse"]
+        assert "amplitude" in data["impulse"]
+        assert isinstance(data["impulse"]["time"], list)
+        assert isinstance(data["impulse"]["amplitude"], list)
+        assert len(data["impulse"]["time"]) > 0
+        
+        # Verify metrics
+        assert "steady_state" in data["metrics"]
+        assert "overshoot_pct" in data["metrics"]
+        assert "rise_time" in data["metrics"]
+        assert "settling_time" in data["metrics"]
+        
+        # Verify metric types
+        assert isinstance(data["metrics"]["steady_state"], (int, float))
+        assert isinstance(data["metrics"]["overshoot_pct"], (int, float))
+        # rise_time and settling_time can be None
+        
+        print(f"✓ Time-response endpoint passed")
+        print(f"  - Step time points: {len(data['step']['time'])}")
+        print(f"  - Impulse time points: {len(data['impulse']['time'])}")
+        print(f"  - Steady state: {data['metrics']['steady_state']}")
+        print(f"  - Overshoot: {data['metrics']['overshoot_pct']}%")
+        print(f"  - Rise time: {data['metrics']['rise_time']}")
+        print(f"  - Settling time: {data['metrics']['settling_time']}")
+    
+    def test_time_response_invalid_tf(self):
+        """Test time-response with invalid transfer function"""
+        payload = {
+            "numerator": [0, 0, 0, 0],
+            "denominator": [0, 0, 0, 0, 0],
+            "freq_min": 0.01,
+            "freq_max": 100.0,
+            "num_points": 512
+        }
+        response = requests.post(f"{BASE_URL}/api/time-response", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert "error" in data
+        print(f"✓ Time-response error handling passed")
+
+
+class TestTransfersCRUD:
+    """CRUD operations for saved transfer functions"""
+    
+    def test_save_and_list_transfer(self):
+        """Test saving a transfer function and listing it"""
+        # Save a new transfer function
+        save_payload = {
+            "name": "TEST_Low_Pass_Filter",
+            "numerator": [0, 0, 0, 1],
+            "denominator": [0, 0, 0, 1, 1]
+        }
+        save_response = requests.post(f"{BASE_URL}/api/transfers", json=save_payload)
+        assert save_response.status_code == 200
+        
+        saved_data = save_response.json()
+        assert "id" in saved_data
+        assert "name" in saved_data
+        assert "numerator" in saved_data
+        assert "denominator" in saved_data
+        assert "created_at" in saved_data
+        assert saved_data["name"] == "TEST_Low_Pass_Filter"
+        assert saved_data["numerator"] == [0, 0, 0, 1]
+        assert saved_data["denominator"] == [0, 0, 0, 1, 1]
+        
+        saved_id = saved_data["id"]
+        print(f"✓ Save transfer function passed - ID: {saved_id}")
+        
+        # List all transfers and verify the saved one is present
+        list_response = requests.get(f"{BASE_URL}/api/transfers")
+        assert list_response.status_code == 200
+        
+        transfers = list_response.json()
+        assert isinstance(transfers, list)
+        
+        # Find our saved transfer
+        found = False
+        for tf in transfers:
+            if tf["id"] == saved_id:
+                found = True
+                assert tf["name"] == "TEST_Low_Pass_Filter"
+                assert tf["numerator"] == [0, 0, 0, 1]
+                assert tf["denominator"] == [0, 0, 0, 1, 1]
+                break
+        
+        assert found, "Saved transfer function not found in list"
+        print(f"✓ List transfers passed - Total transfers: {len(transfers)}")
+        
+        # Cleanup: delete the test transfer
+        delete_response = requests.delete(f"{BASE_URL}/api/transfers/{saved_id}")
+        assert delete_response.status_code == 200
+        delete_data = delete_response.json()
+        assert delete_data["status"] == "deleted"
+        print(f"✓ Delete transfer function passed")
+        
+        # Verify it's deleted by listing again
+        verify_response = requests.get(f"{BASE_URL}/api/transfers")
+        verify_transfers = verify_response.json()
+        for tf in verify_transfers:
+            assert tf["id"] != saved_id, "Transfer function still exists after deletion"
+        print(f"✓ Verified deletion - Transfer removed from list")
+    
+    def test_delete_nonexistent_transfer(self):
+        """Test deleting a non-existent transfer function"""
+        fake_id = "nonexistent-id-12345"
+        response = requests.delete(f"{BASE_URL}/api/transfers/{fake_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert "error" in data
+        print(f"✓ Delete non-existent transfer error handling passed")
+

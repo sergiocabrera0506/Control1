@@ -36,6 +36,25 @@ export interface CursorData {
   phase: number;
 }
 
+export interface TimeResponseData {
+  step: { time: number[]; amplitude: number[] };
+  impulse: { time: number[]; amplitude: number[] };
+  metrics: {
+    steady_state: number;
+    overshoot_pct: number;
+    rise_time: number | null;
+    settling_time: number | null;
+  };
+}
+
+export interface SavedTransfer {
+  id: string;
+  name: string;
+  numerator: number[];
+  denominator: number[];
+  created_at: string;
+}
+
 interface AppContextType {
   numerator: number[];
   setNumerator: (n: number[]) => void;
@@ -49,6 +68,10 @@ interface AppContextType {
   setIsLoading: (l: boolean) => void;
   cursor: CursorData | null;
   setCursor: (c: CursorData | null) => void;
+  timeResponse: TimeResponseData | null;
+  setTimeResponse: (t: TimeResponseData | null) => void;
+  savedTransfers: SavedTransfer[];
+  setSavedTransfers: (s: SavedTransfer[]) => void;
 }
 
 const defaultConfig: AppConfig = {
@@ -69,6 +92,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig);
   const [isLoading, setIsLoading] = useState(false);
   const [cursor, setCursor] = useState<CursorData | null>(null);
+  const [timeResponse, setTimeResponse] = useState<TimeResponseData | null>(null);
+  const [savedTransfers, setSavedTransfers] = useState<SavedTransfer[]>([]);
 
   return (
     <AppContext.Provider value={{
@@ -78,6 +103,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       config, setConfig,
       isLoading, setIsLoading,
       cursor, setCursor,
+      timeResponse, setTimeResponse,
+      savedTransfers, setSavedTransfers,
     }}>
       {children}
     </AppContext.Provider>

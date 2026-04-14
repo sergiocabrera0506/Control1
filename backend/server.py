@@ -34,6 +34,12 @@ class TransferFunctionInput(BaseModel):
     num_points: int = 1024
 
 
+class SaveTransferInput(BaseModel):
+    name: str
+    numerator: List[float]
+    denominator: List[float]
+
+
 def compute_analysis(num: List[float], den: List[float], freq_min: float, freq_max: float, num_points: int):
     # Remove leading zeros
     while len(num) > 1 and num[0] == 0:
@@ -214,6 +220,99 @@ async def export_pdf(data: TransferFunctionInput):
     doc.build(elems)
     pdf_b64 = base64.b64encode(buf.getvalue()).decode()
     return {"pdf_base64": pdf_b64, "filename": "bode_report.pdf"}
+
+
+@api_router.post("/time-response")
+async def time_response(data: TransferFunctionInput):
+    num = list(data.numerator)
+    den = list(data.denominator)
+    while len(num) > 1 and num[0] == 0:
+        num = num[1:]
+    while len(den) > 1 and den[0] == 0:
+        den = den[1:]
+    if all(n == 0 for n in num) or all(d == 0 for d in den):
+        return {"error": "Invalid transfer function"}
+
+    sys_tf = signal.TransferFunction(num, den)
+
+    try:
+        t_step, y_step = signal.step(sys_tf, N=data.num_points)
+    except Exception:
+        t_step = np.linspace(0, 10, data.num_points)
+        y_step = np.zeros(data.num_points)
+
+    try:
+        t_imp, y_imp = signal.impulse(sys_tf, N=data.num_points)
+    except Exception:
+        t_imp = np.linspace(0, 10, data.num_points)
+        y_imp = np.zeros(data.num_points)
+
+    # Compute key metrics
+    step_final = float(y_step[-1]) if len(y_step) > 0 else 0
+    step_max = float(np.max(y_step)) if len(y_step) > 0 else 0
+    overshoot = ((step_max - step_final) / step_final * 100) if step_final != 0 else 0
+
+    # Rise time (10% to 90% of final value)
+    rise_time = None
+    if step_final != 0:
+        try:
+            t10 = t_step[np.where(y_step >= 0.1 * step_final)[0][0]]
+            t90 = t_step[np.where(y_step >= 0.9 * step_final)[0][0]]
+            rise_time = float(t90 - t10)
+        except (IndexError, ValueError):
+            pass
+
+    # Settling time (2% band)
+    settling_time = None
+    if step_final != 0:
+        try:
+            band = 0.02 * abs(step_final)
+            settled = np.where(np.abs(y_step - step_final) > band)[0]
+            if len(settled) > 0:
+                settling_time = float(t_step[settled[-1]])
+        except (IndexError, ValueError):
+            pass
+
+    return {
+        "step": {"time": [float(v) for v in t_step], "amplitude": [float(v) for v in y_step]},
+        "impulse": {"time": [float(v) for v in t_imp], "amplitude": [float(v) for v in y_imp]},
+        "metrics": {
+            "steady_state": round(step_final, 4),
+            "overshoot_pct": round(max(overshoot, 0), 2),
+            "rise_time": round(rise_time, 4) if rise_time is not None else None,
+            "settling_time": round(settling_time, 4) if settling_time is not None else None,
+        }
+    }
+
+
+# ---- Saved Transfer Functions CRUD ----
+
+@api_router.post("/transfers")
+async def save_transfer(data: SaveTransferInput):
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": data.name,
+        "numerator": data.numerator,
+        "denominator": data.denominator,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.transfers.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@api_router.get("/transfers")
+async def list_transfers():
+    transfers = await db.transfers.find({}, {"_id": 0}).to_list(100)
+    return transfers
+
+
+@api_router.delete("/transfers/{transfer_id}")
+async def delete_transfer(transfer_id: str):
+    result = await db.transfers.delete_one({"id": transfer_id})
+    if result.deleted_count == 0:
+        return {"error": "Transfer not found"}
+    return {"status": "deleted"}
 
 
 app.include_router(api_router)
