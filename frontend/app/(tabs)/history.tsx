@@ -20,7 +20,7 @@ function timeAgo(iso: string): string {
 
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleString('en-US', {
+  return d.toLocaleString('es-ES', {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   });
@@ -54,10 +54,10 @@ export default function HistoryScreen() {
   };
 
   const clearAll = () => {
-    Alert.alert('Clear History', 'Delete all simulation history?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Limpiar Historial', '¿Eliminar todo el historial de simulaciones?', [
+      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Clear All', style: 'destructive', onPress: async () => {
+        text: 'Limpiar Todo', style: 'destructive', onPress: async () => {
           try {
             await fetch(`${BACKEND_URL}/api/history`, { method: 'DELETE' });
             loadHistory();
@@ -72,7 +72,7 @@ export default function HistoryScreen() {
     const den = [...Array(5 - entry.denominator.length).fill(0), ...entry.denominator];
     setNumerator(num.slice(-4));
     setDenominator(den.slice(-5));
-    Alert.alert('Loaded', 'Coefficients loaded. Go to FUNCTION tab to run simulation.');
+    Alert.alert('Cargado', 'Coeficientes cargados. Ve a la pestaña FUNCIÓN para ejecutar la simulación.');
   };
 
   return (
@@ -82,14 +82,14 @@ export default function HistoryScreen() {
         <View>
           <View style={s.row}>
             <Ionicons name="time" size={20} color={COLORS.accentPrimary} />
-            <Text style={s.headerTitle}> SIM_LOG</Text>
+            <Text style={s.headerTitle}> REG_SIM</Text>
           </View>
-          <Text style={s.subtitle}>SIMULATION HISTORY</Text>
+          <Text style={s.subtitle}>HISTORIAL DE SIMULACIONES</Text>
         </View>
         {history.length > 0 && (
           <TouchableOpacity testID="clear-history-btn" onPress={clearAll} style={s.clearBtn}>
             <Ionicons name="trash-outline" size={16} color={COLORS.accentDanger} />
-            <Text style={s.clearText}> CLEAR</Text>
+            <Text style={s.clearText}> LIMPIAR</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -98,19 +98,19 @@ export default function HistoryScreen() {
       <View style={s.statsBar}>
         <View style={s.stat}>
           <Text style={s.statVal}>{history.length}</Text>
-          <Text style={s.statLabel}>TOTAL RUNS</Text>
+          <Text style={s.statLabel}>TOTAL EJECUCIONES</Text>
         </View>
         <View style={s.stat}>
           <Text style={[s.statVal, { color: COLORS.accentPrimary }]}>
             {history.filter(h => h.is_stable).length}
           </Text>
-          <Text style={s.statLabel}>STABLE</Text>
+          <Text style={s.statLabel}>ESTABLES</Text>
         </View>
         <View style={s.stat}>
           <Text style={[s.statVal, { color: COLORS.accentDanger }]}>
             {history.filter(h => !h.is_stable).length}
           </Text>
-          <Text style={s.statLabel}>UNSTABLE</Text>
+          <Text style={s.statLabel}>INESTABLES</Text>
         </View>
       </View>
 
@@ -122,8 +122,8 @@ export default function HistoryScreen() {
         {history.length === 0 ? (
           <View style={s.empty}>
             <Ionicons name="time-outline" size={48} color={COLORS.textSecondary} />
-            <Text style={s.emptyText}>NO SIMULATIONS YET</Text>
-            <Text style={s.emptyHint}>Run a simulation to see it here</Text>
+            <Text style={s.emptyText}>AÚN NO HAY SIMULACIONES</Text>
+            <Text style={s.emptyHint}>Ejecuta una simulación para verla aquí</Text>
           </View>
         ) : (
           <>
@@ -147,7 +147,7 @@ export default function HistoryScreen() {
                           </Text>
                         </View>
                         <Text style={[s.stableTag, { color: entry.is_stable ? COLORS.accentPrimary : COLORS.accentDanger }]}>
-                          {entry.is_stable ? 'STABLE' : 'UNSTABLE'}
+                          {entry.is_stable ? 'ESTABLE' : 'INESTABLE'}
                         </Text>
                       </View>
                       <TouchableOpacity testID={`delete-history-${entry.id}`} onPress={() => deleteEntry(entry.id)}

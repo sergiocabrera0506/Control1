@@ -26,21 +26,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Function',
+          title: 'Función',
           tabBarIcon: ({ color, size }) => <Ionicons name="calculator" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="analyze"
         options={{
-          title: 'Analyze',
+          title: 'Análisis',
           tabBarIcon: ({ color, size }) => <Ionicons name="analytics" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="stability"
         options={{
-          title: 'Stability',
+          title: 'Estabilidad',
           tabBarIcon: ({ color, size }) => <Ionicons name="pulse" size={size} color={color} />,
         }}
       />
@@ -54,7 +54,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: 'History',
+          title: 'Historial',
           tabBarIcon: ({ color, size }) => <Ionicons name="time" size={size} color={color} />,
         }}
       />

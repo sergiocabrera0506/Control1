@@ -83,7 +83,7 @@ export default function TimeChart({ time, amplitude, color, label, showGrid = tr
         </SvgText>
         {/* X-axis label */}
         <SvgText x={p.l + cw / 2} y={p.t + ch + 18} fill={COLORS.textSecondary} fontSize={8} fontFamily={FONTS.mono} textAnchor="middle">
-          TIME (s)
+          TIEMPO (s)
         </SvgText>
       </Svg>
     </View>

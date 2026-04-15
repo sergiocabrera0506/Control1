@@ -68,14 +68,14 @@ export default function StabilityScreen() {
         <View style={s.header}>
           <View style={s.row}>
             <Ionicons name="pulse" size={20} color={COLORS.accentPrimary} />
-            <Text style={s.headerTitle}> SYS_ARCHITECT</Text>
+            <Text style={s.headerTitle}> ARQ_SISTEMA</Text>
           </View>
         </View>
 
         {/* Section title */}
         <View style={s.secRow}>
-          <Text style={s.secTitle}>POLE-ZERO MAP</Text>
-          <Text style={s.secSub}>S-PLANE ANALYTICS</Text>
+          <Text style={s.secTitle}>MAPA POLOS-CEROS</Text>
+          <Text style={s.secSub}>ANÁLISIS PLANO S</Text>
         </View>
 
         {/* Pole-Zero Map */}
@@ -84,10 +84,10 @@ export default function StabilityScreen() {
         {/* Poles Table */}
         {result.poles.length > 0 && (
           <View testID="poles-table" style={s.tableCard}>
-            <Text style={s.tableTitle}>POLES</Text>
+            <Text style={s.tableTitle}>POLOS</Text>
             <View style={s.tableHeader}>
               <Text style={[s.tableHCol, { flex: 1 }]}>REAL</Text>
-              <Text style={[s.tableHCol, { flex: 1 }]}>IMAGINARY</Text>
+              <Text style={[s.tableHCol, { flex: 1 }]}>IMAGINARIO</Text>
             </View>
             {result.poles.map((p, i) => (
               <View key={`p${i}`} style={s.tableRow}>
@@ -101,10 +101,10 @@ export default function StabilityScreen() {
         {/* Zeros Table */}
         {result.zeros.length > 0 && (
           <View testID="zeros-table" style={s.tableCard}>
-            <Text style={s.tableTitle}>ZEROS</Text>
+            <Text style={s.tableTitle}>CEROS</Text>
             <View style={s.tableHeader}>
               <Text style={[s.tableHCol, { flex: 1 }]}>REAL</Text>
-              <Text style={[s.tableHCol, { flex: 1 }]}>IMAGINARY</Text>
+              <Text style={[s.tableHCol, { flex: 1 }]}>IMAGINARIO</Text>
             </View>
             {result.zeros.map((z, i) => (
               <View key={`z${i}`} style={s.tableRow}>
@@ -118,9 +118,9 @@ export default function StabilityScreen() {
         {/* System Health */}
         <View testID="system-health" style={[s.healthCard, { borderColor: result.is_stable ? COLORS.accentPrimary : COLORS.accentDanger }]}>
           <View>
-            <Text style={s.healthLabel}>SYSTEM HEALTH</Text>
+            <Text style={s.healthLabel}>SALUD DEL SISTEMA</Text>
             <Text style={[s.healthVal, { color: result.is_stable ? COLORS.accentPrimary : COLORS.accentDanger }]}>
-              {result.is_stable ? 'STABLE' : 'UNSTABLE'}
+              {result.is_stable ? 'ESTABLE' : 'INESTABLE'}
             </Text>
           </View>
           <View style={[s.healthIcon, { backgroundColor: result.is_stable ? COLORS.accentPrimary : COLORS.accentDanger }]}>
@@ -131,14 +131,14 @@ export default function StabilityScreen() {
         {/* Margins */}
         <View style={s.marginRow}>
           <View testID="stability-gain-margin" style={[s.marginCard, { borderBottomColor: COLORS.accentSecondary }]}>
-            <Text style={s.marginLabel}>GAIN MARGIN</Text>
+            <Text style={s.marginLabel}>MARGEN DE GANANCIA</Text>
             <Text style={s.marginVal}>
               {result.gain_margin_db != null ? fmt(result.gain_margin_db, 1) : '∞'}
               <Text style={s.marginUnit}> dB</Text>
             </Text>
           </View>
           <View testID="stability-phase-margin" style={[s.marginCard, { borderBottomColor: COLORS.accentWarning }]}>
-            <Text style={s.marginLabel}>PHASE MARGIN</Text>
+            <Text style={s.marginLabel}>MARGEN DE FASE</Text>
             <Text style={s.marginVal}>
               {result.phase_margin_deg != null ? fmt(result.phase_margin_deg, 1) : '∞'}
               <Text style={s.marginUnit}> deg</Text>
@@ -147,14 +147,14 @@ export default function StabilityScreen() {
         </View>
 
         {/* Export Pipeline */}
-        <Text style={s.exportTitle}>EXPORT PIPELINE</Text>
+        <Text style={s.exportTitle}>EXPORTAR DATOS</Text>
         <TouchableOpacity testID="download-csv-btn" style={s.exportBtn} onPress={exportCSV} activeOpacity={0.7}>
           <View style={[s.exportIcon, { backgroundColor: COLORS.accentPrimary + '22' }]}>
             <Ionicons name="grid-outline" size={20} color={COLORS.accentPrimary} />
           </View>
           <View style={s.exportInfo}>
-            <Text style={s.exportBtnTitle}>Download CSV</Text>
-            <Text style={s.exportBtnSub}>RAW TELEMETRY DATA</Text>
+            <Text style={s.exportBtnTitle}>Descargar CSV</Text>
+            <Text style={s.exportBtnSub}>DATOS DE TELEMETRÍA</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
         </TouchableOpacity>
@@ -164,8 +164,8 @@ export default function StabilityScreen() {
             <Ionicons name="document-text-outline" size={20} color={COLORS.accentDanger} />
           </View>
           <View style={s.exportInfo}>
-            <Text style={s.exportBtnTitle}>Generate PDF Report</Text>
-            <Text style={s.exportBtnSub}>FULL STABILITY ANALYSIS</Text>
+            <Text style={s.exportBtnTitle}>Generar Informe PDF</Text>
+            <Text style={s.exportBtnSub}>ANÁLISIS DE ESTABILIDAD COMPLETO</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
         </TouchableOpacity>

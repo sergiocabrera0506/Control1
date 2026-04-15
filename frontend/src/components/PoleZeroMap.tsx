@@ -16,7 +16,7 @@ export default function PoleZeroMap({ poles, zeros }: Props) {
   if (all.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.empty}>No poles or zeros</Text>
+        <Text style={styles.empty}>Sin polos ni ceros</Text>
       </View>
     );
   }
@@ -71,11 +71,11 @@ export default function PoleZeroMap({ poles, zeros }: Props) {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <Text style={[styles.legendSymbol, { color: COLORS.accentPrimary }]}>x</Text>
-          <Text style={styles.legendText}>POLES</Text>
+          <Text style={styles.legendText}>POLOS</Text>
         </View>
         <View style={styles.legendItem}>
           <Text style={[styles.legendSymbol, { color: COLORS.accentSecondary }]}>o</Text>
-          <Text style={styles.legendText}>ZEROS</Text>
+          <Text style={styles.legendText}>CEROS</Text>
         </View>
       </View>
     </View>

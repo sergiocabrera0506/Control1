@@ -28,18 +28,18 @@ export default function ConfigScreen() {
                 <Ionicons name="hardware-chip" size={20} color={COLORS.accentPrimary} />
                 <Text style={s.headerTitle}> ENGINEER_CORE</Text>
               </View>
-              <Text style={s.configTitle}>CONFIG</Text>
+              <Text style={s.configTitle}>CONFIGURACIÓN</Text>
             </View>
             <View style={s.statusBox}>
-              <Text style={s.statusLabel}>SYSTEM STATUS</Text>
-              <Text style={s.statusVal}>OPTIMIZED_V3.4</Text>
+              <Text style={s.statusLabel}>ESTADO DEL SISTEMA</Text>
+              <Text style={s.statusVal}>OPTIMIZADO_V3.4</Text>
             </View>
           </View>
 
           {/* Frequency Range */}
           <View testID="freq-range-card" style={s.card}>
             <View style={s.cardRow}>
-              <Text style={s.cardTitle}>FREQUENCY RANGE</Text>
+              <Text style={s.cardTitle}>RANGO DE FRECUENCIA</Text>
               <Text style={s.freqRange}>
                 {config.freqMin}Hz — {config.freqMax >= 1000 ? `${config.freqMax / 1000}kHz` : `${config.freqMax}Hz`}
               </Text>
@@ -75,7 +75,7 @@ export default function ConfigScreen() {
           </View>
 
           {/* Point Density */}
-          <Text style={s.sectionTitle}>POINT DENSITY (SAMPLES)</Text>
+          <Text style={s.sectionTitle}>DENSIDAD DE PUNTOS (MUESTRAS)</Text>
           <View testID="point-density-selector" style={s.pointRow}>
             {POINT_OPTIONS.map(n => (
               <TouchableOpacity
@@ -86,7 +86,7 @@ export default function ConfigScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={[s.pointText, config.numPoints === n && s.pointTextActive]}>{n}</Text>
-                {config.numPoints === n && <Text style={s.optimum}>OPTIMUM</Text>}
+                {config.numPoints === n && <Text style={s.optimum}>ÓPTIMO</Text>}
               </TouchableOpacity>
             ))}
           </View>
@@ -96,7 +96,7 @@ export default function ConfigScreen() {
             <View style={s.toggleRow}>
               <View style={s.row}>
                 <Ionicons name="grid-outline" size={18} color={COLORS.accentSecondary} />
-                <Text style={s.toggleLabel}> Show Grid</Text>
+                <Text style={s.toggleLabel}> Mostrar Cuadrícula</Text>
               </View>
               <Switch
                 testID="toggle-grid"
@@ -110,7 +110,7 @@ export default function ConfigScreen() {
             <View style={s.toggleRow}>
               <View style={s.row}>
                 <Ionicons name="trending-up-outline" size={18} color={COLORS.accentWarning} />
-                <Text style={s.toggleLabel}> Asymptotes</Text>
+                <Text style={s.toggleLabel}> Asíntotas</Text>
               </View>
               <Switch
                 testID="toggle-asymptotes"
@@ -124,7 +124,7 @@ export default function ConfigScreen() {
             <View style={s.toggleRow}>
               <View style={s.row}>
                 <Ionicons name="ellipse-outline" size={18} color={COLORS.accentSecondary} />
-                <Text style={s.toggleLabel}> Phase Markers</Text>
+                <Text style={s.toggleLabel}> Marcadores de Fase</Text>
               </View>
               <Switch
                 testID="toggle-phase-markers"
@@ -140,7 +140,7 @@ export default function ConfigScreen() {
           <View testID="latency-card" style={[s.card, { borderLeftWidth: 3, borderLeftColor: COLORS.accentPrimary }]}>
             <View style={s.cardRow}>
               <View>
-                <Text style={s.latencyLabel}>CALCULATION LATENCY</Text>
+                <Text style={s.latencyLabel}>LATENCIA DE CÁLCULO</Text>
                 <Text style={s.latencyVal}>0.042 <Text style={s.latencyUnit}>ms</Text></Text>
               </View>
               <Ionicons name="flash" size={22} color={COLORS.accentPrimary} />
@@ -150,7 +150,7 @@ export default function ConfigScreen() {
           {/* Reset */}
           <TouchableOpacity testID="reset-defaults-btn" style={s.resetBtn} onPress={reset} activeOpacity={0.7}>
             <Ionicons name="refresh" size={18} color={COLORS.textSecondary} />
-            <Text style={s.resetText}> Reset to Default</Text>
+            <Text style={s.resetText}> Restablecer Valores</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
