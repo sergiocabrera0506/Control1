@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Path, Line, Text as SvgText } from 'react-native-svg';
+import Svg, { Path, Line, Circle, Rect, Text as SvgText, G } from 'react-native-svg';
 import { COLORS, FONTS } from '../theme';
 
 interface Props {
@@ -9,14 +9,15 @@ interface Props {
   color: string;
   label: string;
   showGrid: boolean;
+  unit?: string;
   onCursorMove?: (index: number) => void;
 }
 
-export default function BodeChart({ frequencies, values, color, label, showGrid, onCursorMove }: Props) {
-  const [dims, setDims] = useState({ w: 300, h: 200 });
+export default function BodeChart({ frequencies, values, color, label, showGrid, unit = 'dB', onCursorMove }: Props) {
+  const [dims, setDims] = useState({ w: 300, h: 220 });
   const [cursorIdx, setCursorIdx] = useState<number | null>(null);
 
-  const p = { t: 15, r: 15, b: 25, l: 55 };
+  const p = { t: 20, r: 15, b: 25, l: 55 };
   const cw = dims.w - p.l - p.r;
   const ch = dims.h - p.t - p.b;
 
@@ -36,23 +37,20 @@ export default function BodeChart({ frequencies, values, color, label, showGrid,
   const fToX = (f: number) => p.l + ((Math.log10(Math.max(f, 1e-10)) - logMin) / logRange) * cw;
   const vToY = (v: number) => p.t + ch - ((v - yMin) / yRange) * ch;
 
-  // Build path - sample if too many points for perf
+  // Build path
   const step = Math.max(1, Math.floor(frequencies.length / 500));
   let pathD = '';
   for (let i = 0; i < frequencies.length; i += step) {
-    const x = fToX(frequencies[i]);
-    const y = vToY(values[i]);
-    pathD += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+    pathD += i === 0 ? `M ${fToX(frequencies[i])} ${vToY(values[i])}` : ` L ${fToX(frequencies[i])} ${vToY(values[i])}`;
   }
-  // Always include last point
   if (frequencies.length > 1) {
     const last = frequencies.length - 1;
     pathD += ` L ${fToX(frequencies[last])} ${vToY(values[last])}`;
   }
 
+  // Grid
   const grids: React.ReactElement[] = [];
   if (showGrid) {
-    // Horizontal
     const yStep = yRange / 5;
     for (let i = 0; i <= 5; i++) {
       const val = yMin + i * yStep;
@@ -64,33 +62,68 @@ export default function BodeChart({ frequencies, values, color, label, showGrid,
         </SvgText>
       );
     }
-    // Vertical decades
     const sd = Math.floor(logMin);
     const ed = Math.ceil(logMax);
     for (let d = sd; d <= ed; d++) {
       const x = fToX(Math.pow(10, d));
       if (x >= p.l && x <= p.l + cw) {
-        grids.push(
-          <Line key={`v${d}`} x1={x} y1={p.t} x2={x} y2={p.t + ch} stroke={COLORS.gridLines} strokeWidth={1} />
-        );
+        grids.push(<Line key={`v${d}`} x1={x} y1={p.t} x2={x} y2={p.t + ch} stroke={COLORS.gridLines} strokeWidth={1} />);
       }
     }
   }
 
   const handleTouch = useCallback((evt: any) => {
-    const x = evt.nativeEvent.locationX - p.l;
+    const ne = evt.nativeEvent || evt;
+    const x = (ne.locationX ?? ne.offsetX ?? 0) - p.l;
     if (x < 0 || x > cw || cw <= 0) return;
     const logF = logMin + (x / cw) * logRange;
     const targetF = Math.pow(10, logF);
     let lo = 0, hi = frequencies.length - 1;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      if (frequencies[mid] < targetF) lo = mid + 1;
-      else hi = mid;
-    }
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (frequencies[mid] < targetF) lo = mid + 1; else hi = mid; }
     setCursorIdx(lo);
     onCursorMove?.(lo);
   }, [frequencies, logMin, logRange, cw, onCursorMove]);
+
+  const clearCursor = useCallback(() => { setCursorIdx(null); }, []);
+
+  // Cursor MATLAB-style
+  const renderCursor = () => {
+    if (cursorIdx === null || cursorIdx < 0 || cursorIdx >= frequencies.length) return null;
+    const cx = fToX(frequencies[cursorIdx]);
+    const cy = vToY(values[cursorIdx]);
+    const freq = frequencies[cursorIdx];
+    const val = values[cursorIdx];
+
+    // Format frequency
+    const fStr = freq >= 1e3 ? `${(freq / 1e3).toFixed(2)} kHz` : `${freq.toFixed(2)} Hz`;
+    const vStr = `${val.toFixed(2)} ${unit}`;
+    const tooltipText = `${fStr} | ${vStr}`;
+    const tooltipW = Math.min(tooltipText.length * 6.2 + 16, cw * 0.8);
+    const tooltipH = 22;
+
+    // Position tooltip: prefer right of cursor, flip if near edge
+    let tx = cx + 8;
+    if (tx + tooltipW > p.l + cw) tx = cx - tooltipW - 8;
+    let ty = cy - tooltipH - 8;
+    if (ty < p.t) ty = cy + 8;
+
+    return (
+      <G>
+        {/* Vertical crosshair */}
+        <Line x1={cx} y1={p.t} x2={cx} y2={p.t + ch} stroke={COLORS.accentPrimary} strokeWidth={1} strokeDasharray="3,3" opacity={0.7} />
+        {/* Horizontal crosshair */}
+        <Line x1={p.l} y1={cy} x2={p.l + cw} y2={cy} stroke={COLORS.accentPrimary} strokeWidth={1} strokeDasharray="3,3" opacity={0.7} />
+        {/* Dot on curve */}
+        <Circle cx={cx} cy={cy} r={5} fill={color} stroke={COLORS.textPrimary} strokeWidth={2} />
+        {/* Tooltip background */}
+        <Rect x={tx} y={ty} width={tooltipW} height={tooltipH} rx={4} fill={COLORS.bgMain} stroke={color} strokeWidth={1} opacity={0.95} />
+        {/* Tooltip text */}
+        <SvgText x={tx + 8} y={ty + 15} fill={COLORS.textPrimary} fontSize={10} fontFamily={FONTS.mono}>
+          {tooltipText}
+        </SvgText>
+      </G>
+    );
+  };
 
   return (
     <View
@@ -99,19 +132,20 @@ export default function BodeChart({ frequencies, values, color, label, showGrid,
       style={styles.container}
       onTouchMove={handleTouch}
       onTouchStart={handleTouch}
+      onTouchEnd={clearCursor}
+      onStartShouldSetResponder={() => true}
+      onMoveShouldSetResponder={() => true}
+      // @ts-ignore - web compatibility
+      onMouseMove={handleTouch}
+      onMouseDown={handleTouch}
+      onMouseLeave={clearCursor}
     >
       <Svg width={dims.w} height={dims.h}>
         <Line x1={p.l} y1={p.t} x2={p.l} y2={p.t + ch} stroke={COLORS.border} strokeWidth={1} />
         <Line x1={p.l} y1={p.t + ch} x2={p.l + cw} y2={p.t + ch} stroke={COLORS.border} strokeWidth={1} />
         {grids}
         <Path d={pathD} stroke={color} strokeWidth={2} fill="none" />
-        {cursorIdx !== null && cursorIdx >= 0 && cursorIdx < frequencies.length && (
-          <Line
-            x1={fToX(frequencies[cursorIdx])} y1={p.t}
-            x2={fToX(frequencies[cursorIdx])} y2={p.t + ch}
-            stroke={COLORS.accentPrimary} strokeWidth={1} strokeDasharray="4,4"
-          />
-        )}
+        {renderCursor()}
         <SvgText x={p.l + cw - 5} y={p.t + 12} fill={color} fontSize={10} fontFamily={FONTS.mono} textAnchor="end">
           {label}
         </SvgText>
@@ -122,7 +156,7 @@ export default function BodeChart({ frequencies, values, color, label, showGrid,
 
 const styles = StyleSheet.create({
   container: {
-    height: 200,
+    height: 220,
     backgroundColor: COLORS.bgCard,
     borderRadius: 4,
     borderWidth: 1,

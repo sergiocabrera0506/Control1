@@ -45,8 +45,8 @@ export default function AnalyzeScreen() {
           <Text style={[s.cursorVal, { color: COLORS.accentWarning }]}>{cursor ? `${fmt(cursor.phase)} grados` : '—'}</Text>
         </View>
 
-        <BodeChart frequencies={result.frequencies} values={result.magnitude_db} color={COLORS.accentSecondary} label="MAGNITUD" showGrid={config.showGrid} onCursorMove={handleCursorMove} />
-        <View style={{ marginTop: 12 }}><BodeChart frequencies={result.frequencies} values={result.phase_deg} color={COLORS.accentPrimary} label="FASE" showGrid={config.showGrid} onCursorMove={handleCursorMove} /></View>
+        <BodeChart frequencies={result.frequencies} values={result.magnitude_db} color={COLORS.accentSecondary} label="MAGNITUD" unit="dB" showGrid={config.showGrid} onCursorMove={handleCursorMove} />
+        <View style={{ marginTop: 12 }}><BodeChart frequencies={result.frequencies} values={result.phase_deg} color={COLORS.accentPrimary} label="FASE" unit="°" showGrid={config.showGrid} onCursorMove={handleCursorMove} /></View>
 
         {result.gain_margin_db != null && (<View testID="gain-margin-pill" style={[s.pill, { borderLeftColor: COLORS.accentSecondary }]}><Text style={s.pillLabel}>MARGEN DE GANANCIA</Text><Text style={s.pillVal}>{fmt(result.gain_margin_db)} <Text style={s.pillUnit}>dB</Text></Text></View>)}
         {result.phase_margin_deg != null && (<View testID="phase-margin-pill" style={[s.pill, { borderLeftColor: COLORS.accentWarning }]}><Text style={s.pillLabel}>MARGEN DE FASE</Text><Text style={s.pillVal}>{fmt(result.phase_margin_deg)} <Text style={s.pillUnit}>grados</Text></Text></View>)}
