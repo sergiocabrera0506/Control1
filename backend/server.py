@@ -109,6 +109,26 @@ async def analyze(data: TransferFunctionInput):
     )
     if result is None:
         return {"error": "Invalid transfer function: all coefficients are zero"}
+
+    # Auto-save to simulation history
+    try:
+        history_doc = {
+            "id": str(uuid.uuid4()),
+            "numerator": list(data.numerator),
+            "denominator": list(data.denominator),
+            "order": result["order"],
+            "is_stable": result["is_stable"],
+            "gain_margin_db": result.get("gain_margin_db"),
+            "phase_margin_deg": result.get("phase_margin_deg"),
+            "freq_min": data.freq_min,
+            "freq_max": data.freq_max,
+            "num_points": data.num_points,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.simulation_history.insert_one(history_doc)
+    except Exception:
+        pass  # Don't fail the analysis if history save fails
+
     return result
 
 
@@ -313,6 +333,28 @@ async def delete_transfer(transfer_id: str):
     if result.deleted_count == 0:
         return {"error": "Transfer not found"}
     return {"status": "deleted"}
+
+
+# ---- Simulation History ----
+
+@api_router.get("/history")
+async def list_history():
+    history = await db.simulation_history.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return history
+
+
+@api_router.delete("/history/{history_id}")
+async def delete_history_entry(history_id: str):
+    res = await db.simulation_history.delete_one({"id": history_id})
+    if res.deleted_count == 0:
+        return {"error": "Entry not found"}
+    return {"status": "deleted"}
+
+
+@api_router.delete("/history")
+async def clear_history():
+    res = await db.simulation_history.delete_many({})
+    return {"deleted": res.deleted_count}
 
 
 app.include_router(api_router)

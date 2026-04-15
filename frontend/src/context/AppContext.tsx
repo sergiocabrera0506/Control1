@@ -55,6 +55,20 @@ export interface SavedTransfer {
   created_at: string;
 }
 
+export interface HistoryEntry {
+  id: string;
+  numerator: number[];
+  denominator: number[];
+  order: number;
+  is_stable: boolean;
+  gain_margin_db: number | null;
+  phase_margin_deg: number | null;
+  freq_min: number;
+  freq_max: number;
+  num_points: number;
+  created_at: string;
+}
+
 interface AppContextType {
   numerator: number[];
   setNumerator: (n: number[]) => void;
@@ -72,6 +86,8 @@ interface AppContextType {
   setTimeResponse: (t: TimeResponseData | null) => void;
   savedTransfers: SavedTransfer[];
   setSavedTransfers: (s: SavedTransfer[]) => void;
+  history: HistoryEntry[];
+  setHistory: (h: HistoryEntry[]) => void;
 }
 
 const defaultConfig: AppConfig = {
@@ -94,6 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [cursor, setCursor] = useState<CursorData | null>(null);
   const [timeResponse, setTimeResponse] = useState<TimeResponseData | null>(null);
   const [savedTransfers, setSavedTransfers] = useState<SavedTransfer[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   return (
     <AppContext.Provider value={{
@@ -105,6 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cursor, setCursor,
       timeResponse, setTimeResponse,
       savedTransfers, setSavedTransfers,
+      history, setHistory,
     }}>
       {children}
     </AppContext.Provider>

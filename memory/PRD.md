@@ -14,8 +14,15 @@ Control systems engineering app for analyzing transfer functions (1st to 4th ord
 8. **Export PDF** - Complete analysis report with stability info, margins, poles/zeros, and sampled Bode data
 9. **Config** - Adjustable frequency range, point density (512/1024/2048), grid/asymptotes/phase marker toggles
 
+## New Features (v3)
+16. **Simulation History** - Auto-saves every simulation to MongoDB with full metadata
+17. **History Tab** - Timeline view with stats bar (total/stable/unstable), timestamps, time-ago labels
+18. **Clear History** - Delete individual entries or clear all
+19. **Load from History** - Tap to reload coefficients from any past simulation
+20. **Inline Config on Function Tab** - Frequency range (min/max Hz) and point density (512/1024/2048) moved to Function tab for faster workflow
+
 ## Navigation
-4 tabs: Function | Analyze | Stability | Config
+5 tabs: Function | Analyze | Stability | Config | History
 
 ## New Features (v2)
 10. **Step Response** - Time-domain step response chart with steady-state reference line

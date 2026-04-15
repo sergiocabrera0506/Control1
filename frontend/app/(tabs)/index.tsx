@@ -17,9 +17,11 @@ const DEN_LABELS = ['A4 (S\u2074)', 'A3 (S\u00B3)', 'A2 (S\u00B2)', 'A1 (S\u00B9
 export default function FunctionScreen() {
   const {
     numerator, setNumerator, denominator, setDenominator,
-    config, setResult, isLoading, setIsLoading, result,
+    config, setConfig, setResult, isLoading, setIsLoading, result,
     setTimeResponse, savedTransfers, setSavedTransfers,
   } = useAppContext();
+
+  const POINT_OPTIONS = [512, 1024, 2048];
 
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveName, setSaveName] = useState('');
@@ -176,6 +178,48 @@ export default function FunctionScreen() {
             ))}
           </View>
 
+          {/* Frequency Range */}
+          <View testID="freq-range-inline" style={s.configCard}>
+            <View style={[s.row, { justifyContent: 'space-between', marginBottom: 10 }]}>
+              <Text style={s.configLabel}>FREQUENCY RANGE</Text>
+              <Text style={s.freqRangeText}>
+                {config.freqMin}Hz — {config.freqMax >= 1000 ? `${config.freqMax / 1000}kHz` : `${config.freqMax}Hz`}
+              </Text>
+            </View>
+            <View style={s.freqRow}>
+              <View style={s.freqBox}>
+                <Text style={s.miniLabel}>MIN (Hz)</Text>
+                <TextInput testID="freq-min-input" style={s.freqInput}
+                  value={String(config.freqMin)}
+                  onChangeText={v => setConfig({ ...config, freqMin: parseFloat(v) || 0.01 })}
+                  keyboardType="numeric" placeholderTextColor={COLORS.textSecondary} />
+              </View>
+              <View style={s.freqBox}>
+                <Text style={s.miniLabel}>MAX (Hz)</Text>
+                <TextInput testID="freq-max-input" style={s.freqInput}
+                  value={String(config.freqMax)}
+                  onChangeText={v => setConfig({ ...config, freqMax: parseFloat(v) || 100000 })}
+                  keyboardType="numeric" placeholderTextColor={COLORS.textSecondary} />
+              </View>
+            </View>
+          </View>
+
+          {/* Point Density */}
+          <View style={s.secHeader}>
+            <Text style={s.configLabel}>POINT DENSITY</Text>
+            <Text style={s.badge}>SAMPLES</Text>
+          </View>
+          <View testID="point-density-inline" style={s.pointRow}>
+            {POINT_OPTIONS.map(n => (
+              <TouchableOpacity key={n} testID={`point-${n}`}
+                style={[s.pointBtn, config.numPoints === n && s.pointBtnActive]}
+                onPress={() => setConfig({ ...config, numPoints: n })} activeOpacity={0.7}>
+                <Text style={[s.pointText, config.numPoints === n && s.pointTextActive]}>{n}</Text>
+                {config.numPoints === n && <Text style={s.optimumTag}>ACTIVE</Text>}
+              </TouchableOpacity>
+            ))}
+          </View>
+
           {/* Info bar */}
           <View style={s.infoBar}>
             <View style={s.row}>
@@ -278,6 +322,19 @@ const s = StyleSheet.create({
   inputVal: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 22, fontWeight: '700', padding: 0 },
   infoBar: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12, paddingVertical: 8 },
   infoText: { color: COLORS.textSecondary, fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 1 },
+  // Config inline
+  configCard: { backgroundColor: COLORS.bgCard, borderRadius: 4, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 16 },
+  configLabel: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 13, fontWeight: '700', letterSpacing: 1 },
+  freqRangeText: { color: COLORS.accentSecondary, fontFamily: FONTS.mono, fontSize: 12 },
+  freqRow: { flexDirection: 'row', gap: 12 },
+  freqBox: { flex: 1 },
+  freqInput: { color: COLORS.textPrimary, fontFamily: FONTS.mono, fontSize: 16, fontWeight: '700', borderBottomWidth: 2, borderBottomColor: COLORS.border, paddingBottom: 4, padding: 0 },
+  pointRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  pointBtn: { flex: 1, backgroundColor: COLORS.bgCard, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border, paddingVertical: 12, alignItems: 'center' },
+  pointBtnActive: { borderColor: COLORS.accentPrimary, borderWidth: 2 },
+  pointText: { color: COLORS.textSecondary, fontFamily: FONTS.mono, fontSize: 16, fontWeight: '700' },
+  pointTextActive: { color: COLORS.accentPrimary },
+  optimumTag: { color: COLORS.accentPrimary, fontFamily: FONTS.mono, fontSize: 7, letterSpacing: 1.5, marginTop: 2 },
   runBtn: { backgroundColor: COLORS.accentPrimary, borderRadius: 8, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
   runText: { color: COLORS.bgMain, fontFamily: FONTS.mono, fontSize: 16, fontWeight: '700', letterSpacing: 2, marginRight: 8 },
   // Saved
